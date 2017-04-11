@@ -1,3 +1,119 @@
+
+# Samples Codes for yii2-starter-kit:
+
+## 1. In discourse site, need set the url of sso url to https://www.testsite.com/user/sign-in/login  which is your yii2 framwork's login page
+
+## 2. In yii2-starter-kit site, need put all the files to yii2-starter-kit/vendor/sammaye/yii2-discourse-sso/
+
+## 3. In yii2-starter-kit site, need add the codes below in the yii2-starter-kit/vendor/yii2soft/extensions.php, you can composer install this extension, but it requires mongodb which is not used at all, so we'd better manully install the extension
+
+```
+  'sammaye/yii2-discourse-sso' => 
+  array (
+    'name' => 'sammaye/yii2-discourse-sso',
+    'version' => '2.0.0.0',
+    'alias' => 
+    array (
+      '@sammaye/discourse' => $vendorDir . '/sammaye/yii2-discourse-sso',
+    ),
+  ),
+```
+
+## 4. In the controller you want to use to sso authenticate, you can add following function, this is almost same as the one in original doc, but added one line to make @discourse working
+```
+Yii::setAlias('@discourse', 'https://discourse site address');
+```
+
+### Same codes as original doc
+```
+	public function actionDiscourseSso()
+	{
+		$request = Yii::$app->getRequest();
+		$sso = Yii::$app->discourseSso;
+		
+ 		$payload = $request->get('sso');
+		$sig = $request->get('sig');
+
+		if(!($sso->validate($payload, $sig))){
+			// invaild, deny
+			throw new ForbiddenHttpException('Bad SSO request');
+		}
+		
+		$nonce = $sso->getNonce($payload);
+		
+		if(Yii::$app->getUser()->isGuest){
+			// We add session variable to track it after we log the user in so we can redirect them back
+			// This method works well with custom login methods like social networks
+			Yii::$app->getSession()->set('sso', ['sso' => $payload, 'sig' => $sig]);
+			return $this->redirect(['site/login']);
+		}else{
+			$user = Yii::$app->getuser()->getIdentity();
+		}
+		
+		Yii::$app->getSession()->remove('sso');
+		
+		// We send over the data
+		$userparams = [
+			"nonce" => $nonce,
+			"external_id" => (String)$user->id,
+			"email" => $user->email,
+			
+			// Optional - feel free to delete these two
+			"username" => $user->username,
+			"name" => $user->username,
+			
+			//'avatar_url' => Url::to(['image/profile-image', 'id' => (String)$user->_id], 'http')
+		];
+		$q = $sso->buildLoginString($userparams);
+		
+		/// We redirect back
+		Yii::setAlias('@discourse', 'https://support.usens.com');
+		header('Location: ' . Yii::getAlias('@discourse') . '/session/sso_login?' . $q);
+	 
+	}
+```
+
+## 5. In the login funtion, need add following codes, original codes used session, but my code not, be careful about the redirect address, should be your controller/action address of sso function in step 4
+
+File Location: yii2-starter-kit/frontend/modules/user/controllers/SignInController.php
+
+Function changed " public function actionLogin()"
+
+```
+        if ($model->load(Yii::$app->request->post()) && $model->login()) {
+			//Yii::warning($sso = Yii::$app->request->get('sso'));
+			
+			
+			if($sso = Yii::$app->request->get('sso')){
+				//Yii::warning('sso');
+				$sig = Yii::$app->request->get('sig');
+				
+				//Yii::warning($sso);
+				//Yii::warning($sig);
+				
+				return $this->redirect([
+					'/your controller name/discourse-sso', 
+					'sso' => $sso, 
+					'sig' => $sig
+				]);
+			}
+	
+            return $this->goBack();
+        } else {
+			$this->layout = 'base_dev'; //change layout
+            return $this->render('login', [
+                'model' => $model
+            ]);
+        }
+
+```
+
+
+
+
+
+
+
 # yii2-discourse-sso
 
 Discourse SSO for Yii2
