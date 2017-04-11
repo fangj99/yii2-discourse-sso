@@ -67,7 +67,7 @@ Yii::setAlias('@discourse', 'https://discourse site address');
 		$q = $sso->buildLoginString($userparams);
 		
 		/// We redirect back
-		Yii::setAlias('@discourse', 'https://support.usens.com');
+		Yii::setAlias('@discourse', 'https://discourse site address');
 		header('Location: ' . Yii::getAlias('@discourse') . '/session/sso_login?' . $q);
 	 
 	}
