@@ -3,7 +3,7 @@
 
 ## 1. In discourse site, need set the url of sso url to https://www.testsite.com/user/sign-in/login  which is your yii2 framwork's login page
 
-## 2. In yii2-starter-kit site, need put all the files to yii2-starter-kit/vendor/sammaye/yii2-discourse-sso/
+## 2. In yii2-starter-kit site, need put all the extension files into yii2-starter-kit/vendor/sammaye/yii2-discourse-sso/
 
 ## 3. In yii2-starter-kit site, need add the codes below in the yii2-starter-kit/vendor/yii2soft/extensions.php, you can composer install this extension, but it requires mongodb which is not used at all, so we'd better manully install the extension
 
